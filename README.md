@@ -11,7 +11,7 @@ This document summarises the various security considerations to be taken care of
 
 [Censorship resistance and DOS protection](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/README.md#censorship-resistance-and-dos-protection)
 
-[Security Considerations for Developers](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/README.md#censorship-resistance-and-dos-protection)
+[Security Considerations for Developers](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/README.md#security-considerations-for-developers)
 
 ## Background
 Regarding the explanation, tutorials, and documentation about Account-abstraction, I can find hundreds of them. However, the most effective ones so far are the audit report from OpenZeppelin and the ERC 4337 written by Vitalik Buterin: "Account abstraction without Ethereum protocol changes." These objectively demonstrate that the developer community needs more in-depth and lengthy content, along with technical analysis. Most of the explanations, tutorials, and documentation primarily come from these two sources. However, some technical aspects in these materials have become outdated. When discussing with Yoav Weiss, I discovered that many of the unresolved issues mentioned in the OpenZeppelin report have been addressed in the updated code. The new challenge is that developers often overlook audit reports, and these reports alone cannot provide a comprehensive security guidance for developers. Establishing such guidance would be a massive and long-term undertaking, but I am willing to take the first step. 
@@ -112,6 +112,7 @@ The key challenge to achieving censorship resistance is providing DOS protection
 These checks cost the equivalent of 35k gas to perform on the EVM. [You can find a solidity benchmark implemented here](https://github.com/ankitchiplunkar/erc4337#erc4337-gas-estimates----). Since account abstraction enables arbitrary execution logic, work to be performed by mempool to identify invalid User Operations is now a function of the complexity of the validation step and therefore potentially unbounded. Typical SC wallet implementations of account abstractions are therefore forced to use centralized message relayers and achieve DOS protection through traditional means including IP allow / ban lists, API keys, rate limiting, and reputation systems.
 
 Following is a sample implementation of the validateUserOp function. This is also ran by the executor off-chain for DoS protection.
+
 
 ![Censorship](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA_code_fig/Censorship%20resistance%20and%20DOS%20protection.png)
 [Source](https://github.com/eth-infinitism/account-abstraction/blob/develop/contracts/core/BaseAccount.sol#L38-L48)
