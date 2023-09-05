@@ -53,11 +53,63 @@ Cybersecurity and data-driven decision-making have numerous applications in the 
 Linkedin：https://www.linkedin.com/in/mt2/
 
 ## Audit of EntryPoint smart contract
+The entry point contract will need to be very heavily audited and formally verified, because it will serve as a central trust point for all ERC-4337. In total, this architecture reduces auditing and formal verification load for the ecosystem, because the amount of work that individual accounts have to do becomes much smaller (they need only verify the validateUserOp function and its “check signature, increment nonce and pay fees” logic) and check that other functions are msg.sender == ENTRY_POINT gated (perhaps also allowing msg.sender == self), but it is nevertheless the case that this is done precisely by concentrating security risk in the entry point contract that needs to be verified to be very robust.
+Verification would need to cover two primary claims (not including claims needed to protect paymasters, and claims needed to establish p2p-level DoS resistance):
+1.Safety against arbitrary hijacking: The entry point only calls an account generically if validateUserOp to that specific account has passed (and with op.calldata equal to the generic call’s calldata)
+2.Safety against fee draining: If the entry point calls validateUserOp and passes, it also must make the generic call with calldata equal to op.calldata
+Following is a sample implementation of the validateUserOp function.
+
+![Audit of EntryPoint smart contract](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA/Audit%20of%20EntryPoint%20smart%20contract.jpg)
 
 ## Gas overhead
+Compared to regular transactions, ERC-4337 transactions may involve slightly more gas overhead due to the added functionality and flexibility provided by the standard. 
+While 4337 moves much of the transaction validation logic on chain, it aims to do so as efficiently as possible in order to provide a good user experience. Since 4337 allows for bundling multiple user operations together in a single EOA transaction, it has the opportunity of amortizing the 21k gas overhead the the EOA across these operations. The benchmarks provided by the eth-infinitism implementation show that in a best case scenario of 10 user operations bundle with simple validation yields an overhead of 39.8k gas per user operation (~2x a typical EOA transaction overhead). This is not materially different to SC wallets.
+Hence, this additional gas cost is often offset by the benefits gained, such as support for multi-operations or the ability to upgrade wallets, making it a trade-off between functionality and gas efficiency.
 
 ## One transaction at a time
+ERC-4337 limits the ability of accounts to queue and send multiple transactions into the mempool simultaneously. While the standard supports atomic multi-operations within a single transaction, the restriction on queuing multiple transactions may pose a limitation in certain use cases where simultaneous or batched transactions are required. However, the atomic multi-operation feature mitigates the need for simultaneous transactions in many scenarios, reducing the impact of this limitation.
+The reasoning behind restriction on queuing multiple transactions is explained below:
+We want to avoid situations where one op’s validation messes with the validation of a later op in the bundle.
+As long as the bundle doesn’t include multiple ops for the same wallet, we actually get this for free because of the storage restrictions. if the validations of two ops don’t touch the same storage, they can’t interfere with each other. To take advantage of this, executors will make sure that a bundle contains at most one op from any given wallet.
 
 ## Censorship resistance and DOS protection
+One of the key limitations of current SC wallet implementations of account abstraction is the lack of censorship resistance. While in theory, EOA wallet transactions are censorship-resistant due to the use of the gossip network for message routing, SC wallets generally use centralized message relays, thus being subject to censorship.
+The key challenge to achieving censorship resistance is providing DOS protection to the servers forwarding messages. While the Ethereum transaction mempool is far from being considered perfect,  the gossip network for EOA accounts is (in theory) protected from DOS by efficiently dropping invalid transactions from the mempool nodes. Each node checks that EOA transactions have:
+
+A valid signature
+A valid nonce
+A sufficient account balance to pay the maximum gas fees
+
+These checks cost the equivalent of 35k gas to perform on the EVM. You can find a solidity benchmark implemented here. Since account abstraction enables arbitrary execution logic, work to be performed by mempool to identify invalid User Operations is now a function of the complexity of the validation step and therefore potentially unbounded. Typical SC wallet implementations of account abstractions are therefore forced to use centralized message relayers and achieve DOS protection through traditional means including IP allow / ban lists, API keys, rate limiting, and reputation systems.
+
+Following is a sample implementation of the validateUserOp function. This is also ran by the executor off-chain for DoS protection.
+
+![Censorship](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA/Censorship%20resistance%20and%20DOS%20protection.png)
+![1](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA/1.png)
+The dotted line in the above image shows the off-chain execution of validateOp by the executor.
 
 ## Security Considerations for Developers
+ERC-4337’s design abstracts many account properties (gas payment, authentication, transaction batching, etc.) into smart contracts, which necessitates extra scrutiny to guard against the potential attack surfaces this opens up.
+
+Since end users would be issuing transactions via contracts rather than EOAs, deployed smart contracts relying on Solidity code that specifies tx.origin rather than msg.sender to check for an EOA-only caller would become invalid, although the rationale for this check would obviously persist and the necessary logic should be retained when updating such code.
+Code that implements EIP-4337 enables someone off-chain to deploy a transaction on the user’s behalf without having to trust them. Although Account Abstraction greatly boosts security and usability from the user’s perspective, enabling it at the protocol layer can help ensure security and stability for developers when implementing related functionalities, otherwise the complexity of the ERC can bring potential attack vectors. Ethereum’s existing incentive models have been proven to support secure use cases. 
+The design of ERC-4337 does not require participants to know each other. The smart contract which handles transaction payment (the “paymaster”) is nevertheless performing a service for the user. Fortunately, paymasters will be public, and inspectable as a smart contract with its own conditions defined. Paymasters will have conditions for when to pay for things, and people may come up with ways to trick these paymasters. Simple conditions may lead to greater manipulation. 
+When building a paymaster, it is necessary to define rules for end users to pay back the owner and guard against opportunities to manipulate this relationship. For example: 
+ Is the paymaster staked (or is trust achieved via another means)?
+ After the user endorses the transaction, the paymaster has to agree to pay for it, which may involve checking preconditions such as the user’s willingness and ability to reimburse post-execution. 
+
+![developers1](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA/Security%20Considerations%20for%20Developers1.png)
+![developers2](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA/Security%20Considerations%20for%20Developers2.png)
+
+  After the call, performing necessary cleanup, the paymaster retrieves funds from the user. There is a rare possibility that a user validation could invalidate the check. E.g. despite confirming that a user has DAI, the user operation could use too many funds or revoke. If that occurs, there is an edge case where it will stop the transaction and offer another call to retrieve the funds. A malicious user could get the operation for free, leaving the paymaster on the hook to pay for it.
+
+Following is code snippet relevant to the staking information of paymaster.
+
+![developers3](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA/Security%20Considerations%20for%20Developers3.png)
+![developers4](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA/Security%20Considerations%20for%20Developers4.png)
+![developers5](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA/Security%20Considerations%20for%20Developers5.png)
+![developers5](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA/Security%20Considerations%20for%20Developers6.png)
+
+Following is a helpful diagram for understanding the interaction between paymaster and EntryPoint contract.
+
+![2](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA/2.png)
