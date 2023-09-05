@@ -66,6 +66,7 @@ Verification would need to cover two primary claims (not including claims needed
 
 
 • Safety against arbitrary hijacking: The entry point only calls an account generically if validateUserOp to that specific account has passed (and with op.calldata equal to the generic call’s calldata)
+
 • Safety against fee draining: If the entry point calls validateUserOp and passes, it also must make the generic call with calldata equal to op.calldata
 
 
