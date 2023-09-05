@@ -15,16 +15,16 @@ As of now, based solely on Github data, the Account-abstraction repository has b
 We believe that Account Abstraction needs a security development guide that includes test cases and an error case library.
 
 
-## Pre work folder
-
-https://drive.google.com/drive/folders/1m0ZOXss4cffH-FHEoXdAVWRTegxA5nBS
-
-Speech at ETHCC:
-https://youtu.be/iud7Kjl-11g?list=PLhM7rBgpVV-KN8mM17IRSFIGsL0EaGA_m
 ## What else are we doing?
 What else are we doing?We also probably continue my research on the risks of migrating smart contracts between EVM-based Layer 2 networks. In fact, due to the different characteristics of various L2 solutions, there are significant risks involved in migrating smart contracts across different public chains. You can refer to my paper titled "Smart Contract Migration: Security Analysis and Recommendations from Ethereum to Arbitrum" for more information on the migration risks related to Arbitrum. Here is the link:
 
 https://arxiv.org/abs/2307.14773.
+
+We conducted research on the current state of EIP security, performed case studies, and provided security recommendations. The goal is to gain a comprehensive understanding of the security features and potential risks of these proposals, and to propose practical solutions to enhance the security of EIPs.
+
+EIP_Security_Analysis_Application_Program_Standards_Attack_Events
+
+https://github.com/Mirror-Tang/EIP_Security_Analysis_Application_Program_Standards_Attack_Events
 
 We excel at problem identification, whether it is in the field of smart contract security audits or academia. Our expertise in smart contract knowledge and academic writing enables us to produce effective and easily understandable content. We are also passionate about problem-solving and spreading blockchain knowledge across various industries. For example:
 
