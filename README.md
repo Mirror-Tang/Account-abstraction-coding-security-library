@@ -23,9 +23,9 @@ We believe that Account Abstraction needs a security development guide that incl
 
 ### [Security Considerations for Developers](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/README.md#security-considerations-for-developers-1)
 
-### [What else are we doing?](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/README.md#what-else-are-we-doing)
+### [What else are we doing?](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications#what-else-are-we-doing-1)
 
-### [About Me](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/README.md#about-me)
+### [About Me](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications#about-me-1)
 
 
 ## Background 
