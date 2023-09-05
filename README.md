@@ -59,7 +59,7 @@ Verification would need to cover two primary claims (not including claims needed
 2.Safety against fee draining: If the entry point calls validateUserOp and passes, it also must make the generic call with calldata equal to op.calldata
 Following is a sample implementation of the validateUserOp function.
 
-![Audit of EntryPoint smart contract](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA/Audit%20of%20EntryPoint%20smart%20contract.jpg)
+![Audit of EntryPoint smart contract](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA_code_fig/Audit%20of%20EntryPoint%20smart%20contract.jpg)
 
 ## Gas overhead
 Compared to regular transactions, ERC-4337 transactions may involve slightly more gas overhead due to the added functionality and flexibility provided by the standard. 
