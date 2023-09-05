@@ -59,18 +59,18 @@ Cybersecurity and data-driven decision-making have numerous applications in the 
 Linkedin：https://www.linkedin.com/in/mt2/
 
 ## Audit of EntryPoint smart contract
-The entry point contract will need to be very heavily audited and formally verified, because it will serve as a central trust point for all [ERC-4337](https://eips.ethereum.org/EIPS/eip-4337). In total, this architecture reduces auditing and formal verification load for the ecosystem, because the amount of work that individual accounts have to do becomes much smaller (they need only verify the <font color=green> validateUserOp </font> function and its “check signature, increment nonce and pay fees” logic) and check that other functions are <font color =green>msg.sender == ENTRY_POINT</font> gated (perhaps also allowing msg.sender == self), but it is <font color =Green>nevertheless</font> the case that this is done precisely by concentrating security risk in the entry point contract that needs to be verified to be very robust.
+The entry point contract will need to be very heavily audited and formally verified, because it will serve as a central trust point for all [ERC-4337](https://eips.ethereum.org/EIPS/eip-4337). In total, this architecture reduces auditing and formal verification load for the ecosystem, because the amount of work that individual accounts have to do becomes much smaller (they need only verify the ***validateUserOp*** function and its “check signature, increment nonce and pay fees” logic) and check that other functions are ***msg.sender == ENTRY_POINT*** gated (perhaps also allowing ***msg.sender == self***), but it is nevertheless the case that this is done precisely by concentrating security risk in the entry point contract that needs to be verified to be very robust.
 
 
 Verification would need to cover two primary claims (not including claims needed to protect paymasters, and claims needed to establish p2p-level DoS resistance):
 
 
-• Safety against arbitrary hijacking: The entry point only calls an account generically if validateUserOp to that specific account has passed (and with op.calldata equal to the generic call’s calldata)
+• Safety against arbitrary hijacking: The entry point only calls an account generically if ***validateUserOp*** to that specific account has passed (and with ***op.calldata*** equal to the generic call’s calldata)
 
-• Safety against fee draining: If the entry point calls validateUserOp and passes, it also must make the generic call with calldata equal to op.calldata
+• Safety against fee draining: If the entry point calls ***validateUserOp*** and passes, it also must make the generic call with calldata equal to ***op.calldata***
 
 
-Following is a sample implementation of the validateUserOp function.
+Following is a sample implementation of the ***validateUserOp*** function.
 
 ![Audit of EntryPoint smart contract](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA_code_fig/Audit%20of%20EntryPoint%20smart%20contract.jpg)
 [Source](https://github.com/eth-infinitism/account-abstraction/blob/develop/contracts/core/BaseAccount.sol#L38-L48)
@@ -80,7 +80,7 @@ Following is a sample implementation of the validateUserOp function.
 Compared to regular transactions, ERC-4337 transactions may involve slightly more gas overhead due to the added functionality and flexibility provided by the standard. 
 
 
-While 4337 moves much of the transaction validation logic on chain, it aims to do so as efficiently as possible in order to provide a good user experience. Since 4337 allows for bundling multiple user operations together in a single EOA transaction, it has the opportunity of amortizing the 21k gas overhead the the EOA across these operations. The benchmarks provided by the eth-infinitism implementation show that in a best case scenario of 10 user operations bundle with simple validation yields an overhead of 39.8k gas per user operation (~2x a typical EOA transaction overhead). This is not materially different to SC wallets.
+While 4337 moves much of the transaction validation logic on chain, it aims to do so as efficiently as possible in order to provide a good user experience. Since 4337 allows for bundling multiple user operations together in a single EOA transaction, it has the opportunity of amortizing the 21k gas overhead the the EOA across these operations. [The benchmarks provided by the eth-infinitism implementation](https://github.com/eth-infinitism/account-abstraction/blob/develop/reports/gas-checker.txt#L17) show that in a best case scenario of 10 user operations bundle with simple validation yields an overhead of 39.8k gas per user operation (~2x a typical EOA transaction overhead). This is not materially different to SC wallets.
 
 
 Hence, this additional gas cost is often offset by the benefits gained, such as support for multi-operations or the ability to upgrade wallets, making it a trade-off between functionality and gas efficiency.
@@ -109,7 +109,7 @@ The key challenge to achieving censorship resistance is providing DOS protection
 
 • A sufficient account balance to pay the maximum gas fees
 
-These checks cost the equivalent of 35k gas to perform on the EVM. You can find a solidity benchmark implemented here. Since account abstraction enables arbitrary execution logic, work to be performed by mempool to identify invalid User Operations is now a function of the complexity of the validation step and therefore potentially unbounded. Typical SC wallet implementations of account abstractions are therefore forced to use centralized message relayers and achieve DOS protection through traditional means including IP allow / ban lists, API keys, rate limiting, and reputation systems.
+These checks cost the equivalent of 35k gas to perform on the EVM. [You can find a solidity benchmark implemented here](https://github.com/ankitchiplunkar/erc4337#erc4337-gas-estimates----). Since account abstraction enables arbitrary execution logic, work to be performed by mempool to identify invalid User Operations is now a function of the complexity of the validation step and therefore potentially unbounded. Typical SC wallet implementations of account abstractions are therefore forced to use centralized message relayers and achieve DOS protection through traditional means including IP allow / ban lists, API keys, rate limiting, and reputation systems.
 
 Following is a sample implementation of the validateUserOp function. This is also ran by the executor off-chain for DoS protection.
 
@@ -119,12 +119,12 @@ Following is a sample implementation of the validateUserOp function. This is als
 
 ![1](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA_code_fig/1.png)
 
-The dotted line in the above image shows the off-chain execution of validateOp by the executor.
+The dotted line in the above image shows the off-chain execution of ***validateOp*** by the ***executor***.
 
 ## Security Considerations for Developers
 ERC-4337’s design abstracts many account properties (gas payment, authentication, transaction batching, etc.) into smart contracts, which necessitates extra scrutiny to guard against the potential attack surfaces this opens up.
 
-Since end users would be issuing transactions via contracts rather than EOAs, deployed smart contracts relying on Solidity code that specifies tx.origin rather than msg.sender to check for an EOA-only caller would become invalid, although the rationale for this check would obviously persist and the necessary logic should be retained when updating such code.
+Since end users would be issuing transactions via contracts rather than EOAs, deployed smart contracts relying on Solidity code that specifies ***tx.origin*** rather than ***msg.sender*** to check for an EOA-only caller would become invalid, although the rationale for this check would obviously persist and the necessary logic should be retained when updating such code.
 
 
 Code that implements EIP-4337 enables someone off-chain to deploy a transaction on the user’s behalf without having to trust them. Although Account Abstraction greatly boosts security and usability from the user’s perspective, enabling it at the protocol layer can help ensure security and stability for developers when implementing related functionalities, otherwise the complexity of the ERC can bring potential attack vectors. Ethereum’s existing incentive models have been proven to support secure use cases. 
