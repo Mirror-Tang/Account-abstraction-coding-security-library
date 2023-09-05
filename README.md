@@ -54,7 +54,20 @@ Verification would need to cover two primary claims (not including claims needed
 
 Following is a sample implementation of the ***validateUserOp*** function.
 
-![Audit of EntryPoint smart contract](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA_code_fig/Audit%20of%20EntryPoint%20smart%20contract.jpg)
+```solidity
+/**
+     * Validate user's signature and nonce.
+     * subclass doesn't need to override this method. Instead, it should override the specific internal validation methods.
+     */
+    function validateUserOp(UserOperation calldata userOp, bytes32 userOpHash, uint256 missingAccountFunds)
+    external override virtual returns (uint256 validationData) {
+        _requireFromEntryPoint();
+        validationData = _validateSignature(userOp, userOpHash);
+        _validateNonce(userOp.nonce);
+        _payPrefund(missingAccountFunds);
+    }
+```
+
 [Source](https://github.com/eth-infinitism/account-abstraction/blob/develop/contracts/core/BaseAccount.sol#L38-L48)
 
 
@@ -95,10 +108,21 @@ These checks cost the equivalent of 35k gas to perform on the EVM. [You can find
 
 Following is a sample implementation of the validateUserOp function. This is also ran by the executor off-chain for DoS protection.
 
+```solidity
+/**
+     * Validate user's signature and nonce.
+     * subclass doesn't need to override this method. Instead, it should override the specific internal validation methods.
+     */
+    function validateUserOp(UserOperation calldata userOp, bytes32 userOpHash, uint256 missingAccountFunds)
+    external override virtual returns (uint256 validationData) {
+        _requireFromEntryPoint();
+        validationData = _validateSignature(userOp, userOpHash);
+        _validateNonce(userOp.nonce);
+        _payPrefund(missingAccountFunds);
+    }
+```
 
-![Censorship](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA_code_fig/Censorship%20resistance%20and%20DOS%20protection.png)
 [Source](https://github.com/eth-infinitism/account-abstraction/blob/develop/contracts/core/BaseAccount.sol#L38-L48)
-
 
 ![1](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA_code_fig/1.png)
 
@@ -123,9 +147,30 @@ When building a paymaster, it is necessary to define rules for end users to pay 
 
  
 • After the user endorses the transaction, the paymaster has to agree to pay for it, which may involve checking preconditions such as the user’s willingness and ability to reimburse post-execution. 
+```solidity
+/**
+     * perform the post-operation to charge the sender for the gas.
+     * in normal mode, use transferFrom to withdraw enough tokens from the sender's balance.
+     * in case the transferFrom fails, the _postOp reverts and the entryPoint will call it again,
+     * this time in *postOpReverted* mode.
+     * In this mode, we use the deposit to pay (which we validated to be large enough)
+     */
+    function _postOp(PostOpMode mode, bytes calldata context, uint256 actualGasCost) internal override {
 
-![developers1](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA_code_fig/Security%20Considerations%20for%20Developers1.png)
-![developers2](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA_code_fig/Security%20Considerations%20for%20Developers2.png)
+        (address account, IERC20 token, uint256 gasPricePostOp, uint256 maxTokenCost, uint256 maxCost) = abi.decode(context, (address, IERC20, uint256, uint256, uint256));
+        //use same conversion rate as used for validation.
+        uint256 actualTokenCost = (actualGasCost + COST_OF_POST * gasPricePostOp) * maxTokenCost / maxCost;
+        if (mode != PostOpMode.postOpReverted) {
+            // attempt to pay with tokens:
+            token.safeTransferFrom(account, address(this), actualTokenCost);
+        } else {
+            //in case above transferFrom failed, pay with deposit:
+            balances[token][account] -= actualTokenCost;
+        }
+        balances[token][owner()] += actualTokenCost;
+    }
+```
+
 [Source](https://github.com/eth-infinitism/account-abstraction/blob/develop/contracts/samples/DepositPaymaster.sol#L146-L166)
 
 
@@ -133,10 +178,71 @@ When building a paymaster, it is necessary to define rules for end users to pay 
 
 Following is code snippet relevant to the staking information of paymaster.
 
-![developers3](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA_code_fig/Security%20Considerations%20for%20Developers3.png)
-![developers4](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA_code_fig/Security%20Considerations%20for%20Developers4.png)
-![developers5](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA_code_fig/Security%20Considerations%20for%20Developers5.png)
-![developers5](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA_code_fig/Security%20Considerations%20for%20Developers6.png)
+```solidity
+// internal method to return just the stake info
+    function _getStakeInfo(address addr) internal view returns (StakeInfo memory info) {
+        DepositInfo storage depositInfo = deposits[addr];
+        info.stake = depositInfo.stake;
+        info.unstakeDelaySec = depositInfo.unstakeDelaySec;
+    }
+
+/**
+     * add to the account's stake - amount and delay
+     * any pending unstake is first cancelled.
+     * @param unstakeDelaySec the new lock duration before the deposit can be withdrawn.
+     */
+    function addStake(uint32 unstakeDelaySec) public payable {
+        DepositInfo storage info = deposits[msg.sender];
+        require(unstakeDelaySec > 0, "must specify unstake delay");
+        require(unstakeDelaySec >= info.unstakeDelaySec, "cannot decrease unstake time");
+        uint256 stake = info.stake + msg.value;
+        require(stake > 0, "no stake specified");
+        require(stake <= type(uint112).max, "stake overflow");
+        deposits[msg.sender] = DepositInfo(
+            info.deposit,
+            true,
+            uint112(stake),
+            unstakeDelaySec,
+            0
+        );
+        emit StakeLocked(msg.sender, stake, unstakeDelaySec);
+    }
+
+    /**
+     * attempt to unlock the stake.
+     * the value can be withdrawn (using withdrawStake) after the unstake delay.
+     */
+    function unlockStake() external {
+        DepositInfo storage info = deposits[msg.sender];
+        require(info.unstakeDelaySec != 0, "not staked");
+        require(info.staked, "already unstaking");
+        uint48 withdrawTime = uint48(block.timestamp) + info.unstakeDelaySec;
+        info.withdrawTime = withdrawTime;
+        info.staked = false;
+        emit StakeUnlocked(msg.sender, withdrawTime);
+    }
+
+
+    /**
+     * withdraw from the (unlocked) stake.
+     * must first call unlockStake and wait for the unstakeDelay to pass
+     * @param withdrawAddress the address to send withdrawn value.
+     */
+    function withdrawStake(address payable withdrawAddress) external {
+        DepositInfo storage info = deposits[msg.sender];
+        uint256 stake = info.stake;
+        require(stake > 0, "No stake to withdraw");
+        require(info.withdrawTime > 0, "must call unlockStake() first");
+        require(info.withdrawTime <= block.timestamp, "Stake withdrawal is not due");
+        info.unstakeDelaySec = 0;
+        info.withdrawTime = 0;
+        info.stake = 0;
+        emit StakeWithdrawn(msg.sender, withdrawAddress, stake);
+        (bool success,) = withdrawAddress.call{value : stake}("");
+        require(success, "failed to withdraw stake");
+    }
+```
+
 [Source](https://github.com/eth-infinitism/account-abstraction/blob/develop/contracts/core/StakeManager.sol)
 
 
