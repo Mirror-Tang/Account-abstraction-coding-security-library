@@ -84,8 +84,8 @@ These checks cost the equivalent of 35k gas to perform on the EVM. You can find 
 
 Following is a sample implementation of the validateUserOp function. This is also ran by the executor off-chain for DoS protection.
 
-![Censorship](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA/Censorship%20resistance%20and%20DOS%20protection.png)
-![1](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA/1.png)
+![Censorship](hhttps://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA_code_fig/Censorship%20resistance%20and%20DOS%20protection.png)
+![1](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA_code_fig/1.png)
 The dotted line in the above image shows the off-chain execution of validateOp by the executor.
 
 ## Security Considerations for Developers
@@ -98,18 +98,18 @@ When building a paymaster, it is necessary to define rules for end users to pay 
  Is the paymaster staked (or is trust achieved via another means)?
  After the user endorses the transaction, the paymaster has to agree to pay for it, which may involve checking preconditions such as the user’s willingness and ability to reimburse post-execution. 
 
-![developers1](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA/Security%20Considerations%20for%20Developers1.png)
-![developers2](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA/Security%20Considerations%20for%20Developers2.png)
+![developers1](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA_code_fig/Security%20Considerations%20for%20Developers1.png)
+![developers2](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA_code_fig/Security%20Considerations%20for%20Developers2.png)
 
   After the call, performing necessary cleanup, the paymaster retrieves funds from the user. There is a rare possibility that a user validation could invalidate the check. E.g. despite confirming that a user has DAI, the user operation could use too many funds or revoke. If that occurs, there is an edge case where it will stop the transaction and offer another call to retrieve the funds. A malicious user could get the operation for free, leaving the paymaster on the hook to pay for it.
 
 Following is code snippet relevant to the staking information of paymaster.
 
-![developers3](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA/Security%20Considerations%20for%20Developers3.png)
-![developers4](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA/Security%20Considerations%20for%20Developers4.png)
-![developers5](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA/Security%20Considerations%20for%20Developers5.png)
-![developers5](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA/Security%20Considerations%20for%20Developers6.png)
+![developers3](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA_code_fig/Security%20Considerations%20for%20Developers3.png)
+![developers4](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA_code_fig/Security%20Considerations%20for%20Developers4.png)
+![developers5](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA_code_fig/Security%20Considerations%20for%20Developers5.png)
+![developers5](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA_code_fig/Security%20Considerations%20for%20Developers6.png)
 
 Following is a helpful diagram for understanding the interaction between paymaster and EntryPoint contract.
 
-![2](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA/2.png)
+![2](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA_code_fig/2.png)
