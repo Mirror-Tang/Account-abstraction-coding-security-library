@@ -6,21 +6,29 @@ We aim to address the issue of developer security education for Account Abstract
 As of now, based solely on Github data, the Account-abstraction repository has been utilized by 2384 developers and forked 389 times. This indicates that Account-abstraction itself has become a significant application area and is continuously growing. However, the self-description file of Account-abstraction only provides a simple description of code deployment and compatibility test suite, lacking a comprehensive security development guide and security testing cases.
 
 We believe that Account Abstraction needs a security development guide that includes test cases and an error case library.
+
+
+
 ## Table of Contents
 
-### [Background](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/README.md#background)
+### [Background](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/README.md#background-1)
 
-### [Audit of EntryPoint smart contract](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/README.md#audit-of-entrypoint-smart-contract)
+### [Audit of EntryPoint smart contract](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/README.md#audit-of-entrypoint-smart-contract-1)
 
-### [Gas overhead](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/README.md#gas-overhead)
+### [Gas overhead](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/README.md#gas-overhead-1)
 
-### [One transaction at a time](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/README.md#one-transaction-at-a-time)
+### [One transaction at a time](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/README.md#one-transaction-at-a-time-1)
 
-### [Censorship resistance and DOS protection](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/README.md#censorship-resistance-and-dos-protection)
+### [Censorship resistance and DOS protection](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/README.md#censorship-resistance-and-dos-protection-1)
 
-### [Security Considerations for Developers](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/README.md#security-considerations-for-developers)
+### [Security Considerations for Developers](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/README.md#security-considerations-for-developers-1)
 
-## Background
+### [What else are we doing?](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/README.md#what-else-are-we-doing)
+
+### [About Me](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/README.md#about-me)
+
+
+## Background 
 Regarding the explanation, tutorials, and documentation about Account-abstraction, I can find hundreds of them. However, the most effective ones so far are the audit report from OpenZeppelin and the ERC 4337 written by Vitalik Buterin: "Account abstraction without Ethereum protocol changes." These objectively demonstrate that the developer community needs more in-depth and lengthy content, along with technical analysis. Most of the explanations, tutorials, and documentation primarily come from these two sources. However, some technical aspects in these materials have become outdated. When discussing with Yoav Weiss, I discovered that many of the unresolved issues mentioned in the OpenZeppelin report have been addressed in the updated code. The new challenge is that developers often overlook audit reports, and these reports alone cannot provide a comprehensive security guidance for developers. Establishing such guidance would be a massive and long-term undertaking, but I am willing to take the first step. 
 
 We would like to produce a secure development guide with test cases, which will be presented as a test case code repository with help files. At the same time, we hope to collect as many examples of errors that have occurred or are likely to occur during the use of the Account Abstraction protocol as possible for developers' reference.
@@ -31,9 +39,8 @@ At the same time, we noticed that there are already many introductions and devel
 
 We believe that Account Abstraction needs a security development guide that includes test cases and an error case library.
 
+## Audit of EntryPoint smart contract 
 
-
-## Audit of EntryPoint smart contract
 The entry point contract will need to be very heavily audited and formally verified, because it will serve as a central trust point for all [ERC-4337](https://eips.ethereum.org/EIPS/eip-4337). In total, this architecture reduces auditing and formal verification load for the ecosystem, because the amount of work that individual accounts have to do becomes much smaller (they need only verify the ***validateUserOp*** function and its “check signature, increment nonce and pay fees” logic) and check that other functions are ***msg.sender == ENTRY_POINT*** gated (perhaps also allowing ***msg.sender == self***), but it is nevertheless the case that this is done precisely by concentrating security risk in the entry point contract that needs to be verified to be very robust.
 
 
