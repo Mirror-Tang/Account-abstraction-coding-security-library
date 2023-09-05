@@ -103,7 +103,9 @@ One of the key limitations of current SC wallet implementations of account abstr
 The key challenge to achieving censorship resistance is providing DOS protection to the servers forwarding messages. While the Ethereum transaction mempool is far from being considered perfect,  the gossip network for EOA accounts is (in theory) protected from DOS by efficiently dropping invalid transactions from the mempool nodes. Each node checks that EOA transactions have:
 
 • A valid signature
+
 • A valid nonce
+
 • A sufficient account balance to pay the maximum gas fees
 
 These checks cost the equivalent of 35k gas to perform on the EVM. You can find a solidity benchmark implemented here. Since account abstraction enables arbitrary execution logic, work to be performed by mempool to identify invalid User Operations is now a function of the complexity of the validation step and therefore potentially unbounded. Typical SC wallet implementations of account abstractions are therefore forced to use centralized message relayers and achieve DOS protection through traditional means including IP allow / ban lists, API keys, rate limiting, and reputation systems.
