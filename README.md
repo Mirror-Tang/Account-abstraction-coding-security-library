@@ -3,15 +3,15 @@ This document summarises the various security considerations to be taken care of
 
 ## Table of Contents:
 
-Audit of EntryPoint smart contract
+[Audit of EntryPoint smart contract](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/README.md#audit-of-entrypoint-smart-contract)
 
-Gas overhead
+[Gas overhead](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/README.md#gas-overhead)
 
-One transaction at a time
+[One transaction at a time](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/README.md#one-transaction-at-a-time)
 
-Censorship resistance and DOS protection
+[Censorship resistance and DOS protection](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/README.md#censorship-resistance-and-dos-protection)
 
-Security Considerations for Developers
+[Security Considerations for Developers](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/README.md#censorship-resistance-and-dos-protection)
 
 ## Background
 Regarding the explanation, tutorials, and documentation about Account-abstraction, I can find hundreds of them. However, the most effective ones so far are the audit report from OpenZeppelin and the ERC 4337 written by Vitalik Buterin: "Account abstraction without Ethereum protocol changes." These objectively demonstrate that the developer community needs more in-depth and lengthy content, along with technical analysis. Most of the explanations, tutorials, and documentation primarily come from these two sources. However, some technical aspects in these materials have become outdated. When discussing with Yoav Weiss, I discovered that many of the unresolved issues mentioned in the OpenZeppelin report have been addressed in the updated code. The new challenge is that developers often overlook audit reports, and these reports alone cannot provide a comprehensive security guidance for developers. Establishing such guidance would be a massive and long-term undertaking, but I am willing to take the first step. 
@@ -59,7 +59,7 @@ Cybersecurity and data-driven decision-making have numerous applications in the 
 Linkedin：https://www.linkedin.com/in/mt2/
 
 ## Audit of EntryPoint smart contract
-The entry point contract will need to be very heavily audited and formally verified, because it will serve as a central trust point for all ERC-4337. In total, this architecture reduces auditing and formal verification load for the ecosystem, because the amount of work that individual accounts have to do becomes much smaller (they need only verify the validateUserOp function and its “check signature, increment nonce and pay fees” logic) and check that other functions are msg.sender == ENTRY_POINT gated (perhaps also allowing msg.sender == self), but it is nevertheless the case that this is done precisely by concentrating security risk in the entry point contract that needs to be verified to be very robust.
+The entry point contract will need to be very heavily audited and formally verified, because it will serve as a central trust point for all [ERC-4337](https://eips.ethereum.org/EIPS/eip-4337). In total, this architecture reduces auditing and formal verification load for the ecosystem, because the amount of work that individual accounts have to do becomes much smaller (they need only verify the <span style="color:green;">validateUserOp</span> function and its “check signature, increment nonce and pay fees” logic) and check that other functions are msg.sender == ENTRY_POINT gated (perhaps also allowing msg.sender == self), but it is nevertheless the case that this is done precisely by concentrating security risk in the entry point contract that needs to be verified to be very robust.
 
 
 Verification would need to cover two primary claims (not including claims needed to protect paymasters, and claims needed to establish p2p-level DoS resistance):
@@ -73,6 +73,8 @@ Following is a sample implementation of the validateUserOp function.
 
 ![Audit of EntryPoint smart contract](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA_code_fig/Audit%20of%20EntryPoint%20smart%20contract.jpg)
 [Source](https://github.com/eth-infinitism/account-abstraction/blob/develop/contracts/core/BaseAccount.sol#L38-L48)
+
+
 ## Gas overhead
 Compared to regular transactions, ERC-4337 transactions may involve slightly more gas overhead due to the added functionality and flexibility provided by the standard. 
 
@@ -110,6 +112,8 @@ Following is a sample implementation of the validateUserOp function. This is als
 
 ![Censorship](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA_code_fig/Censorship%20resistance%20and%20DOS%20protection.png)
 [Source](https://github.com/eth-infinitism/account-abstraction/blob/develop/contracts/core/BaseAccount.sol#L38-L48)
+
+
 ![1](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA_code_fig/1.png)
 
 The dotted line in the above image shows the off-chain execution of validateOp by the executor.
@@ -135,6 +139,8 @@ When building a paymaster, it is necessary to define rules for end users to pay 
 ![developers1](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA_code_fig/Security%20Considerations%20for%20Developers1.png)
 ![developers2](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA_code_fig/Security%20Considerations%20for%20Developers2.png)
 [Source](https://github.com/eth-infinitism/account-abstraction/blob/develop/contracts/samples/DepositPaymaster.sol#L146-L166)
+
+
 •  After the call, performing necessary cleanup, the paymaster retrieves funds from the user. There is a rare possibility that a user validation could invalidate the check. E.g. despite confirming that a user has DAI, the user operation could use too many funds or revoke. If that occurs, there is an edge case where it will stop the transaction and offer another call to retrieve the funds. A malicious user could get the operation for free, leaving the paymaster on the hook to pay for it.
 
 Following is code snippet relevant to the staking information of paymaster.
@@ -144,6 +150,8 @@ Following is code snippet relevant to the staking information of paymaster.
 ![developers5](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA_code_fig/Security%20Considerations%20for%20Developers5.png)
 ![developers5](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA_code_fig/Security%20Considerations%20for%20Developers6.png)
 [Source](https://github.com/eth-infinitism/account-abstraction/blob/develop/contracts/core/StakeManager.sol)
+
+
 Following is a helpful diagram for understanding the interaction between paymaster and EntryPoint contract.
 
 ![2](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA_code_fig/2.png)
