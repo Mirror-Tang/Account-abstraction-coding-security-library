@@ -134,6 +134,8 @@ The design of ERC-4337 does not require participants to know each other. The sma
 
 
 When building a paymaster, it is necessary to define rules for end users to pay back the owner and guard against opportunities to manipulate this relationship. For example: 
+
+
 • Is the paymaster staked (or is trust achieved via another means)?
 
  
