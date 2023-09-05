@@ -1,17 +1,24 @@
 # Account-abstraction-coding-security-specifications
 This document summarises the various security considerations to be taken care of and be aware of while using EIP 4337(Account Abstraction).
 
-## Table of Contents:
+We aim to address the issue of developer security education for Account Abstraction.
 
-[Audit of EntryPoint smart contract](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/README.md#audit-of-entrypoint-smart-contract)
+As of now, based solely on Github data, the Account-abstraction repository has been utilized by 2384 developers and forked 389 times. This indicates that Account-abstraction itself has become a significant application area and is continuously growing. However, the self-description file of Account-abstraction only provides a simple description of code deployment and compatibility test suite, lacking a comprehensive security development guide and security testing cases.
 
-[Gas overhead](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/README.md#gas-overhead)
+We believe that Account Abstraction needs a security development guide that includes test cases and an error case library.
+## Table of Contents
 
-[One transaction at a time](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/README.md#one-transaction-at-a-time)
+### [Background](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/README.md#background)
 
-[Censorship resistance and DOS protection](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/README.md#censorship-resistance-and-dos-protection)
+### [Audit of EntryPoint smart contract](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/README.md#audit-of-entrypoint-smart-contract)
 
-[Security Considerations for Developers](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/README.md#security-considerations-for-developers)
+### [Gas overhead](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/README.md#gas-overhead)
+
+### [One transaction at a time](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/README.md#one-transaction-at-a-time)
+
+### [Censorship resistance and DOS protection](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/README.md#censorship-resistance-and-dos-protection)
+
+### [Security Considerations for Developers](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/README.md#security-considerations-for-developers)
 
 ## Background
 Regarding the explanation, tutorials, and documentation about Account-abstraction, I can find hundreds of them. However, the most effective ones so far are the audit report from OpenZeppelin and the ERC 4337 written by Vitalik Buterin: "Account abstraction without Ethereum protocol changes." These objectively demonstrate that the developer community needs more in-depth and lengthy content, along with technical analysis. Most of the explanations, tutorials, and documentation primarily come from these two sources. However, some technical aspects in these materials have become outdated. When discussing with Yoav Weiss, I discovered that many of the unresolved issues mentioned in the OpenZeppelin report have been addressed in the updated code. The new challenge is that developers often overlook audit reports, and these reports alone cannot provide a comprehensive security guidance for developers. Establishing such guidance would be a massive and long-term undertaking, but I am willing to take the first step. 
@@ -24,39 +31,7 @@ At the same time, we noticed that there are already many introductions and devel
 
 We believe that Account Abstraction needs a security development guide that includes test cases and an error case library.
 
-## Purpose
-We aim to address the issue of developer security education for Account Abstraction.
 
-As of now, based solely on Github data, the Account-abstraction repository has been utilized by 2384 developers and forked 389 times. This indicates that Account-abstraction itself has become a significant application area and is continuously growing. However, the self-description file of Account-abstraction only provides a simple description of code deployment and compatibility test suite, lacking a comprehensive security development guide and security testing cases.
-
-We believe that Account Abstraction needs a security development guide that includes test cases and an error case library.
-
-## What else are we doing?
-What else are we doing?We also probably continue my research on the risks of migrating smart contracts between EVM-based Layer 2 networks. In fact, due to the different characteristics of various L2 solutions, there are significant risks involved in migrating smart contracts across different public chains. You can refer to my paper titled "Smart Contract Migration: Security Analysis and Recommendations from Ethereum to Arbitrum" for more information on the migration risks related to Arbitrum. Here is the link:
-
-https://arxiv.org/abs/2307.14773.
-
-We conducted research on the current state of EIP security, performed case studies, and provided security recommendations. The goal is to gain a comprehensive understanding of the security features and potential risks of these proposals, and to propose practical solutions to enhance the security of EIPs.
-
-EIP Security Analysis Application Program Standards Attack Events
-
-https://github.com/Mirror-Tang/EIP_Security_Analysis_Application_Program_Standards_Attack_Events
-
-We excel at problem identification, whether it is in the field of smart contract security audits or academia. Our expertise in smart contract knowledge and academic writing enables us to produce effective and easily understandable content. We are also passionate about problem-solving and spreading blockchain knowledge across various industries. For example:
-
-https://www.science.org/doi/10.1126/scirobotics.abm4636
-
-https://www.science.org/doi/10.1126/sciadv.abd2204#elettersSection
-
-Simple features and minor vulnerabilities often lead to major troubles. However, many of these troubles are caused by disclosed vulnerabilities or features. There is still a long way to go in terms of developer education, and I believe I have been on that path...
-
-
-## About Me
-I am an interdisciplinary blockchain scientist involved in researching blockchain engineering and social sciences. My areas of focus include smart contract security, performance of distributed systems, and analysis of data and economics in the fee market. I am intrigued by comprehending the intricate interplay between social and technological aspects in collective decision-making within the blockchain ecosystem. Additionally, I strive to strike a harmonious balance between the performance, security, and technological freedom of  blockchains.
-
-Cybersecurity and data-driven decision-making have numerous applications in the realm of blockchain. They can aid in preventing data validation errors, service interruptions or rollbacks, as well as fund theft. Moreover, they can enhance the sustainability of the economic model, thereby addressing significant challenges.
-
-Linkedin：https://www.linkedin.com/in/mt2/
 
 ## Audit of EntryPoint smart contract
 The entry point contract will need to be very heavily audited and formally verified, because it will serve as a central trust point for all [ERC-4337](https://eips.ethereum.org/EIPS/eip-4337). In total, this architecture reduces auditing and formal verification load for the ecosystem, because the amount of work that individual accounts have to do becomes much smaller (they need only verify the ***validateUserOp*** function and its “check signature, increment nonce and pay fees” logic) and check that other functions are ***msg.sender == ENTRY_POINT*** gated (perhaps also allowing ***msg.sender == self***), but it is nevertheless the case that this is done precisely by concentrating security risk in the entry point contract that needs to be verified to be very robust.
@@ -161,3 +136,31 @@ Following is code snippet relevant to the staking information of paymaster.
 Following is a helpful diagram for understanding the interaction between paymaster and EntryPoint contract.
 
 ![2](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA_code_fig/2.png)
+
+## What else are we doing?
+What else are we doing?We also probably continue my research on the risks of migrating smart contracts between EVM-based Layer 2 networks. In fact, due to the different characteristics of various L2 solutions, there are significant risks involved in migrating smart contracts across different public chains. You can refer to my paper titled "Smart Contract Migration: Security Analysis and Recommendations from Ethereum to Arbitrum" for more information on the migration risks related to Arbitrum. Here is the link:
+
+https://arxiv.org/abs/2307.14773.
+
+We conducted research on the current state of EIP security, performed case studies, and provided security recommendations. The goal is to gain a comprehensive understanding of the security features and potential risks of these proposals, and to propose practical solutions to enhance the security of EIPs.
+
+EIP Security Analysis Application Program Standards Attack Events
+
+https://github.com/Mirror-Tang/EIP_Security_Analysis_Application_Program_Standards_Attack_Events
+
+We excel at problem identification, whether it is in the field of smart contract security audits or academia. Our expertise in smart contract knowledge and academic writing enables us to produce effective and easily understandable content. We are also passionate about problem-solving and spreading blockchain knowledge across various industries. For example:
+
+https://www.science.org/doi/10.1126/scirobotics.abm4636
+
+https://www.science.org/doi/10.1126/sciadv.abd2204#elettersSection
+
+Simple features and minor vulnerabilities often lead to major troubles. However, many of these troubles are caused by disclosed vulnerabilities or features. There is still a long way to go in terms of developer education, and I believe I have been on that path...
+
+
+## About Me
+I am an interdisciplinary blockchain scientist involved in researching blockchain engineering and social sciences. My areas of focus include smart contract security, performance of distributed systems, and analysis of data and economics in the fee market. I am intrigued by comprehending the intricate interplay between social and technological aspects in collective decision-making within the blockchain ecosystem. Additionally, I strive to strike a harmonious balance between the performance, security, and technological freedom of  blockchains.
+
+Cybersecurity and data-driven decision-making have numerous applications in the realm of blockchain. They can aid in preventing data validation errors, service interruptions or rollbacks, as well as fund theft. Moreover, they can enhance the sustainability of the economic model, thereby addressing significant challenges.
+
+Linkedin：https://www.linkedin.com/in/mt2/
+
