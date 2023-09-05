@@ -15,13 +15,18 @@ Security Considerations for Developers
 
 ## Background
 Regarding the explanation, tutorials, and documentation about Account-abstraction, I can find hundreds of them. However, the most effective ones so far are the audit report from OpenZeppelin and the ERC 4337 written by Vitalik Buterin: "Account abstraction without Ethereum protocol changes." These objectively demonstrate that the developer community needs more in-depth and lengthy content, along with technical analysis. Most of the explanations, tutorials, and documentation primarily come from these two sources. However, some technical aspects in these materials have become outdated. When discussing with Yoav Weiss, I discovered that many of the unresolved issues mentioned in the OpenZeppelin report have been addressed in the updated code. The new challenge is that developers often overlook audit reports, and these reports alone cannot provide a comprehensive security guidance for developers. Establishing such guidance would be a massive and long-term undertaking, but I am willing to take the first step. 
+
 We would like to produce a secure development guide with test cases, which will be presented as a test case code repository with help files. At the same time, we hope to collect as many examples of errors that have occurred or are likely to occur during the use of the Account Abstraction protocol as possible for developers' reference.
+
 The research we initially presented at ETH CC was a study on the security specifications of EIP. During the meeting, we had a discussion with Yoav Weiss. Due to the importance of Account Abstraction and the attention it has received from the developer community, we became interested in prioritizing security assistance for Account Abstraction.
+
 At the same time, we noticed that there are already many introductions and developer documentation available online about the functionality of Account Abstraction. However, their content is either simple and lacks test methods for functionality introduction, or only describes how to use the code repository.
+
 We believe that Account Abstraction needs a security development guide that includes test cases and an error case library.
 
 ## Purpose
 We aim to address the issue of developer security education for Account Abstraction.
+
 As of now, based solely on Github data, the Account-abstraction repository has been utilized by 2384 developers and forked 389 times. This indicates that Account-abstraction itself has become a significant application area and is continuously growing. However, the self-description file of Account-abstraction only provides a simple description of code deployment and compatibility test suite, lacking a comprehensive security development guide and security testing cases.
 
 We believe that Account Abstraction needs a security development guide that includes test cases and an error case library.
@@ -48,6 +53,7 @@ Simple features and minor vulnerabilities often lead to major troubles. However,
 
 ## About Me
 I am an interdisciplinary blockchain scientist involved in researching blockchain engineering and social sciences. My areas of focus include smart contract security, performance of distributed systems, and analysis of data and economics in the fee market. I am intrigued by comprehending the intricate interplay between social and technological aspects in collective decision-making within the blockchain ecosystem. Additionally, I strive to strike a harmonious balance between the performance, security, and technological freedom of  blockchains.
+
 Cybersecurity and data-driven decision-making have numerous applications in the realm of blockchain. They can aid in preventing data validation errors, service interruptions or rollbacks, as well as fund theft. Moreover, they can enhance the sustainability of the economic model, thereby addressing significant challenges.
 
 Linkedin：https://www.linkedin.com/in/mt2/
@@ -66,7 +72,7 @@ Verification would need to cover two primary claims (not including claims needed
 Following is a sample implementation of the validateUserOp function.
 
 ![Audit of EntryPoint smart contract](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA_code_fig/Audit%20of%20EntryPoint%20smart%20contract.jpg)
-
+[Source](https://github.com/eth-infinitism/account-abstraction/blob/develop/contracts/core/BaseAccount.sol#L38-L48)
 ## Gas overhead
 Compared to regular transactions, ERC-4337 transactions may involve slightly more gas overhead due to the added functionality and flexibility provided by the standard. 
 
@@ -103,6 +109,7 @@ These checks cost the equivalent of 35k gas to perform on the EVM. You can find 
 Following is a sample implementation of the validateUserOp function. This is also ran by the executor off-chain for DoS protection.
 
 ![Censorship](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA_code_fig/Censorship%20resistance%20and%20DOS%20protection.png)
+[Source](https://github.com/eth-infinitism/account-abstraction/blob/develop/contracts/core/BaseAccount.sol#L38-L48)
 ![1](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA_code_fig/1.png)
 
 The dotted line in the above image shows the off-chain execution of validateOp by the executor.
@@ -127,7 +134,7 @@ When building a paymaster, it is necessary to define rules for end users to pay 
 
 ![developers1](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA_code_fig/Security%20Considerations%20for%20Developers1.png)
 ![developers2](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA_code_fig/Security%20Considerations%20for%20Developers2.png)
-
+[Source](https://github.com/eth-infinitism/account-abstraction/blob/develop/contracts/samples/DepositPaymaster.sol#L146-L166)
 •  After the call, performing necessary cleanup, the paymaster retrieves funds from the user. There is a rare possibility that a user validation could invalidate the check. E.g. despite confirming that a user has DAI, the user operation could use too many funds or revoke. If that occurs, there is an edge case where it will stop the transaction and offer another call to retrieve the funds. A malicious user could get the operation for free, leaving the paymaster on the hook to pay for it.
 
 Following is code snippet relevant to the staking information of paymaster.
@@ -136,7 +143,7 @@ Following is code snippet relevant to the staking information of paymaster.
 ![developers4](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA_code_fig/Security%20Considerations%20for%20Developers4.png)
 ![developers5](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA_code_fig/Security%20Considerations%20for%20Developers5.png)
 ![developers5](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA_code_fig/Security%20Considerations%20for%20Developers6.png)
-
+[Source](https://github.com/eth-infinitism/account-abstraction/blob/develop/contracts/core/StakeManager.sol)
 Following is a helpful diagram for understanding the interaction between paymaster and EntryPoint contract.
 
 ![2](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA_code_fig/2.png)
