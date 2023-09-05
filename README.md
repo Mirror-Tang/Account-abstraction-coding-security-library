@@ -250,6 +250,8 @@ Following is a helpful diagram for understanding the interaction between paymast
 
 ![2](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA_code_fig/2.png)
 
+
+Executor calls both a paymaster contract and a user's smart contract wallet to determine if the user's transaction can be sponsored.
 ## What else are we doing?
 What else are we doing?We also probably continue my research on the risks of migrating smart contracts between EVM-based Layer 2 networks. In fact, due to the different characteristics of various L2 solutions, there are significant risks involved in migrating smart contracts across different public chains. You can refer to my paper titled "Smart Contract Migration: Security Analysis and Recommendations from Ethereum to Arbitrum" for more information on the migration risks related to Arbitrum. Here is the link:
 
