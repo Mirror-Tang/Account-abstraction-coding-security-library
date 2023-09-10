@@ -25,7 +25,7 @@ We believe that Account Abstraction needs a security development guide that incl
 
 ### [What else are we doing?](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications#what-else-are-we-doing-1)
 
-### [About Me](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications#about-me-1)
+
 
 
 ## Background 
@@ -270,12 +270,3 @@ https://www.science.org/doi/10.1126/scirobotics.abm4636
 https://www.science.org/doi/10.1126/sciadv.abd2204#elettersSection
 
 Simple features and minor vulnerabilities often lead to major troubles. However, many of these troubles are caused by disclosed vulnerabilities or features. There is still a long way to go in terms of developer education, and I believe I have been on that path...
-
-
-## About Me
-I am an interdisciplinary blockchain scientist involved in researching blockchain engineering and social sciences. My areas of focus include smart contract security, performance of distributed systems, and analysis of data and economics in the fee market. I am intrigued by comprehending the intricate interplay between social and technological aspects in collective decision-making within the blockchain ecosystem. Additionally, I strive to strike a harmonious balance between the performance, security, and technological freedom of  blockchains.
-
-Cybersecurity and data-driven decision-making have numerous applications in the realm of blockchain. They can aid in preventing data validation errors, service interruptions or rollbacks, as well as fund theft. Moreover, they can enhance the sustainability of the economic model, thereby addressing significant challenges.
-
-Linkedin：https://www.linkedin.com/in/mt2/
-
