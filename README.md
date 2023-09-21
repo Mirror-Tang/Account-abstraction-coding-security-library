@@ -128,6 +128,8 @@ Following is a sample implementation of the validateUserOp function. This is als
 
 The dotted line in the above image shows the off-chain execution of ***validateOp*** by the ***executor***.
 
+## Test case description
+
 ## Security Considerations for Developers
 ERC-4337’s design abstracts many account properties (gas payment, authentication, transaction batching, etc.) into smart contracts, which necessitates extra scrutiny to guard against the potential attack surfaces this opens up.
 
