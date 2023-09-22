@@ -1,19 +1,14 @@
-# Account-abstraction-coding-security-specifications
-This document summarises the various security considerations to be taken care of and be aware of while using EIP 4337(Account Abstraction).
-
-We aim to address the issue of developer security education for Account Abstraction.
-
-As of now, based solely on Github data, the Account-abstraction repository has been utilized by 2384 developers and forked 389 times. This indicates that Account-abstraction itself has become a significant application area and is continuously growing. However, the self-description file of Account-abstraction only provides a simple description of code deployment and compatibility test suite, lacking a comprehensive security development guide and security testing cases.
-
-We believe that Account Abstraction needs a security development guide that includes test cases and an error case library.
+# Account abstraction coding security library
+This document summarises the various security considerations to be taken care of and be aware of while using EIP 4337(Account Abstraction). includes test cases and an error case library.
 
 
 
 ## Table of Contents
 
-### [Background](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/README.md#background-1)
 
-### [Audit of EntryPoint smart contract](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/README.md#audit-of-entrypoint-smart-contract-1)
+### [Test case description](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/README.md#test-case-description-1)
+
+### [Security Considerations for Developers](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/README.md#security-considerations-for-developers-1)
 
 ### [Gas overhead](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/README.md#gas-overhead-1)
 
@@ -21,25 +16,9 @@ We believe that Account Abstraction needs a security development guide that incl
 
 ### [Censorship resistance and DOS protection](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/README.md#censorship-resistance-and-dos-protection-1)
 
-### [Test case description](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/README.md#test-case-description-1)
-
-### [Security Considerations for Developers](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/README.md#security-considerations-for-developers-1)
+### [Audit of EntryPoint smart contract](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/README.md#audit-of-entrypoint-smart-contract-1)
 
 ### [What else are we doing?](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications#what-else-are-we-doing-1)
-
-
-
-
-## Background 
-Regarding the explanation, tutorials, and documentation about **Account-abstraction**, I can find hundreds of them. However, the most effective ones so far are the audit report from OpenZeppelin and the **ERC 4337** written by Vitalik Buterin: "Account abstraction without Ethereum protocol changes." These objectively demonstrate that the developer community needs more in-depth and lengthy content, along with technical analysis. Most of the explanations, tutorials, and documentation primarily come from these two sources. However, some technical aspects in these materials have become outdated. When discussing with Yoav Weiss, I discovered that many of the unresolved issues mentioned in the OpenZeppelin report have been addressed in the updated code. The new challenge is that developers often overlook audit reports, and these reports alone cannot provide a comprehensive security guidance for developers. Establishing such guidance would be a massive and long-term undertaking, but I am willing to take the first step. 
-
-**We would like to produce a secure development guide with test cases, which will be presented as a test case code repository with help files. At the same time, we hope to collect as many examples of errors that have occurred or are likely to occur during the use of the Account Abstraction protocol as possible for developers' reference.**
-
-The research we initially presented at ETH CC was a study on the security specifications of EIP. During the meeting, we had a discussion with Yoav Weiss. Due to the importance of Account Abstraction and the attention it has received from the developer community, we became interested in prioritizing security assistance for Account Abstraction.
-
-At the same time, we noticed that there are already many introductions and developer documentation available online about the functionality of Account Abstraction. However, their content is either simple and lacks test methods for functionality introduction, or only describes how to use the code repository.
-
-We believe that Account Abstraction needs a security development guide that includes test cases and an error case library.
 
 
 ## Test case description
@@ -282,37 +261,6 @@ When developing an account contract according to EIP-4337:
 The EIP-4337 Account contract utilizes custom methods for signature validation, which may carry potential vulnerability risks. Therefore, it is crucial to exercise caution and ensure that the chosen validation methods are sufficiently secure during development.
 Users are encouraged to avoid violating the conditions set forth in the paymaster contract's `postOp()` function to prevent being charged for incomplete operations.
 
-## Audit of EntryPoint smart contract 
-
-The entry point contract will need to be very heavily audited and formally verified, because it will serve as a central trust point for all [ERC-4337](https://eips.ethereum.org/EIPS/eip-4337). In total, this architecture reduces auditing and formal verification load for the ecosystem, because the amount of work that individual accounts have to do becomes much smaller (they need only verify the `validateUserOp` function and its “check signature, increment nonce and pay fees” logic) and check that other functions are `msg.sender == ENTRY_POINT` gated (perhaps also allowing `msg.sender == self`), but it is nevertheless the case that this is done precisely by concentrating security risk in the entry point contract that needs to be verified to be very robust.
-
-
-Verification would need to cover two primary claims (not including claims needed to protect paymasters, and claims needed to establish p2p-level DoS resistance):
-
-
-• Safety against arbitrary hijacking: The entry point only calls an account generically if `validateUserOp` to that specific account has passed (and with `op.calldata` equal to the generic call’s calldata)
-
-• Safety against fee draining: If the entry point calls `validateUserOp`  and passes, it also must make the generic call with calldata equal to ` op.calldata` 
-
-
-Following is a sample implementation of the ` validateUserOp`  function.
-
-```solidity
-/**
-     * Validate user's signature and nonce.
-     * subclass doesn't need to override this method. Instead, it should override the specific internal validation methods.
-     */
-    function validateUserOp(UserOperation calldata userOp, bytes32 userOpHash, uint256 missingAccountFunds)
-    external override virtual returns (uint256 validationData) {
-        _requireFromEntryPoint();
-        validationData = _validateSignature(userOp, userOpHash);
-        _validateNonce(userOp.nonce);
-        _payPrefund(missingAccountFunds);
-    }
-```
-
-[Source](https://github.com/eth-infinitism/account-abstraction/blob/develop/contracts/core/BaseAccount.sol#L38-L48)
-
 
 ## Gas overhead
 Compared to regular transactions, ERC-4337 transactions may involve slightly more gas overhead due to the added functionality and flexibility provided by the standard. 
@@ -370,6 +318,38 @@ Following is a sample implementation of the validateUserOp function. This is als
 ![1](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/pic/1.png)
 
 The dotted line in the above image shows the off-chain execution of `validateOp` by the `executor`.
+
+## Audit of EntryPoint smart contract 
+
+The entry point contract will need to be very heavily audited and formally verified, because it will serve as a central trust point for all [ERC-4337](https://eips.ethereum.org/EIPS/eip-4337). In total, this architecture reduces auditing and formal verification load for the ecosystem, because the amount of work that individual accounts have to do becomes much smaller (they need only verify the `validateUserOp` function and its “check signature, increment nonce and pay fees” logic) and check that other functions are `msg.sender == ENTRY_POINT` gated (perhaps also allowing `msg.sender == self`), but it is nevertheless the case that this is done precisely by concentrating security risk in the entry point contract that needs to be verified to be very robust.
+
+
+Verification would need to cover two primary claims (not including claims needed to protect paymasters, and claims needed to establish p2p-level DoS resistance):
+
+
+• Safety against arbitrary hijacking: The entry point only calls an account generically if `validateUserOp` to that specific account has passed (and with `op.calldata` equal to the generic call’s calldata)
+
+• Safety against fee draining: If the entry point calls `validateUserOp`  and passes, it also must make the generic call with calldata equal to ` op.calldata` 
+
+
+Following is a sample implementation of the ` validateUserOp`  function.
+
+```solidity
+/**
+     * Validate user's signature and nonce.
+     * subclass doesn't need to override this method. Instead, it should override the specific internal validation methods.
+     */
+    function validateUserOp(UserOperation calldata userOp, bytes32 userOpHash, uint256 missingAccountFunds)
+    external override virtual returns (uint256 validationData) {
+        _requireFromEntryPoint();
+        validationData = _validateSignature(userOp, userOpHash);
+        _validateNonce(userOp.nonce);
+        _payPrefund(missingAccountFunds);
+    }
+```
+
+[Source](https://github.com/eth-infinitism/account-abstraction/blob/develop/contracts/core/BaseAccount.sol#L38-L48)
+
 
 ## What else are we doing?
 What else are we doing?We also probably continue my research on the risks of migrating smart contracts between EVM-based Layer 2 networks. In fact, due to the different characteristics of various L2 solutions, there are significant risks involved in migrating smart contracts across different public chains. You can refer to my paper titled "Smart Contract Migration: Security Analysis and Recommendations from Ethereum to Arbitrum" for more information on the migration risks related to Arbitrum. Here is the link:
