@@ -43,18 +43,18 @@ We believe that Account Abstraction needs a security development guide that incl
 
 ## Audit of EntryPoint smart contract 
 
-The entry point contract will need to be very heavily audited and formally verified, because it will serve as a central trust point for all [ERC-4337](https://eips.ethereum.org/EIPS/eip-4337). In total, this architecture reduces auditing and formal verification load for the ecosystem, because the amount of work that individual accounts have to do becomes much smaller (they need only verify the `validateUserOp` function and its “check signature, increment nonce and pay fees” logic) and check that other functions are `msg.sender == ENTRY_POINT` gated (perhaps also allowing ***msg.sender == self***), but it is nevertheless the case that this is done precisely by concentrating security risk in the entry point contract that needs to be verified to be very robust.
+The entry point contract will need to be very heavily audited and formally verified, because it will serve as a central trust point for all [ERC-4337](https://eips.ethereum.org/EIPS/eip-4337). In total, this architecture reduces auditing and formal verification load for the ecosystem, because the amount of work that individual accounts have to do becomes much smaller (they need only verify the `validateUserOp` function and its “check signature, increment nonce and pay fees” logic) and check that other functions are `msg.sender == ENTRY_POINT` gated (perhaps also allowing `msg.sender == self`), but it is nevertheless the case that this is done precisely by concentrating security risk in the entry point contract that needs to be verified to be very robust.
 
 
 Verification would need to cover two primary claims (not including claims needed to protect paymasters, and claims needed to establish p2p-level DoS resistance):
 
 
-• Safety against arbitrary hijacking: The entry point only calls an account generically if ***validateUserOp*** to that specific account has passed (and with ***op.calldata*** equal to the generic call’s calldata)
+• Safety against arbitrary hijacking: The entry point only calls an account generically if `validateUserOp` to that specific account has passed (and with `op.calldata` equal to the generic call’s calldata)
 
-• Safety against fee draining: If the entry point calls ***validateUserOp*** and passes, it also must make the generic call with calldata equal to ***op.calldata***
+• Safety against fee draining: If the entry point calls `validateUserOp`  and passes, it also must make the generic call with calldata equal to ` op.calldata` 
 
 
-Following is a sample implementation of the ***validateUserOp*** function.
+Following is a sample implementation of the ` validateUserOp`  function.
 
 ```solidity
 /**
@@ -237,7 +237,7 @@ This test case is located in [test\Paymaster.t.sol : L21](https://github.com/Mir
 ## Security Considerations for Developers
 ERC-4337’s design abstracts many account properties (gas payment, authentication, transaction batching, etc.) into smart contracts, which necessitates extra scrutiny to guard against the potential attack surfaces this opens up.
 
-Since end users would be issuing transactions via contracts rather than EOAs, deployed smart contracts relying on Solidity code that specifies ***tx.origin*** rather than ***msg.sender*** to check for an EOA-only caller would become invalid, although the rationale for this check would obviously persist and the necessary logic should be retained when updating such code.
+Since end users would be issuing transactions via contracts rather than EOAs, deployed smart contracts relying on Solidity code that specifies ` tx.origin`  rather than ` msg.sender`  to check for an EOA-only caller would become invalid, although the rationale for this check would obviously persist and the necessary logic should be retained when updating such code.
 
 
 Code that implements EIP-4337 enables someone off-chain to deploy a transaction on the user’s behalf without having to trust them. Although Account Abstraction greatly boosts security and usability from the user’s perspective, enabling it at the protocol layer can help ensure security and stability for developers when implementing related functionalities, otherwise the complexity of the ERC can bring potential attack vectors. Ethereum’s existing incentive models have been proven to support secure use cases. 
@@ -361,14 +361,14 @@ Executor calls both a paymaster contract and a user's smart contract wallet to d
 
 When developing a paymaster contract, additional considerations include:
 
-Paymasters must ensure that if validatePaymasterUserOp() succeeds, the postOp() function must be completed. Failure to do so may lead bundlers to attribute it to improper behavior by the paymaster, potentially resulting in restrictions or prohibitions on the paymaster's operations within the mempool.
-Paymasters must also ensure that the postOp() function reverts when conditions are not met, preventing erroneous charges for user operations.
+Paymasters must ensure that if `validatePaymasterUserOp()` succeeds, the `postOp()` function must be completed. Failure to do so may lead bundlers to attribute it to improper behavior by the paymaster, potentially resulting in restrictions or prohibitions on the paymaster's operations within the mempool.
+Paymasters must also ensure that the `postOp()` function reverts when conditions are not met, preventing erroneous charges for user operations.
 
 
 When developing an account contract according to EIP-4337:
 
 The EIP-4337 Account contract utilizes custom methods for signature validation, which may carry potential vulnerability risks. Therefore, it is crucial to exercise caution and ensure that the chosen validation methods are sufficiently secure during development.
-Users are encouraged to avoid violating the conditions set forth in the paymaster contract's postOp() function to prevent being charged for incomplete operations.
+Users are encouraged to avoid violating the conditions set forth in the paymaster contract's `postOp()` function to prevent being charged for incomplete operations.
 
 
 ## What else are we doing?
