@@ -358,6 +358,17 @@ Following is a helpful diagram for understanding the interaction between paymast
 
 
 Executor calls both a paymaster contract and a user's smart contract wallet to determine if the user's transaction can be sponsored.
+
+### Account:
+
+The EIP-4337 Account contract utilizes custom methods for signature validation, which may carry potential vulnerability risks. Therefore, it is crucial to exercise caution and ensure that the chosen validation methods are sufficiently secure during development.
+Users are encouraged to avoid violating the conditions set forth in the paymaster contract's postOp() function to prevent being charged for incomplete operations.
+
+### Paymaster:
+
+Paymasters must ensure that if validatePaymasterUserOp() succeeds, the postOp() function must be completed. Failure to do so may lead bundlers to attribute it to improper behavior by the paymaster, potentially resulting in restrictions or prohibitions on the paymaster's operations within the mempool.
+Paymasters must also ensure that their postOp() function revert when conditions are not met, preventing erroneous charges for user operations.
+
 ## What else are we doing?
 What else are we doing?We also probably continue my research on the risks of migrating smart contracts between EVM-based Layer 2 networks. In fact, due to the different characteristics of various L2 solutions, there are significant risks involved in migrating smart contracts across different public chains. You can refer to my paper titled "Smart Contract Migration: Security Analysis and Recommendations from Ethereum to Arbitrum" for more information on the migration risks related to Arbitrum. Here is the link:
 
