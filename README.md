@@ -126,7 +126,7 @@ Following is a sample implementation of the validateUserOp function. This is als
 
 [Source](https://github.com/eth-infinitism/account-abstraction/blob/develop/contracts/core/BaseAccount.sol#L38-L48)
 
-![1](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA_code_fig/1.png)
+![1](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/pic/1.png)
 
 The dotted line in the above image shows the off-chain execution of ***validateOp*** by the ***executor***.
 
@@ -354,17 +354,17 @@ Following is code snippet relevant to the staking information of paymaster.
 
 Following is a helpful diagram for understanding the interaction between paymaster and EntryPoint contract.
 
-![2](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/AA_code_fig/2.png)
+![2](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/pic/2.png)
 
 
 Executor calls both a paymaster contract and a user's smart contract wallet to determine if the user's transaction can be sponsored.
 
-• When developing a paymaster contract, additional considerations include:
+When developing a paymaster contract, additional considerations include:
 Paymasters must ensure that if validatePaymasterUserOp() succeeds, the postOp() function must be completed. Failure to do so may lead bundlers to attribute it to improper behavior by the paymaster, potentially resulting in restrictions or prohibitions on the paymaster's operations within the mempool.
 Paymasters must also ensure that the postOp() function reverts when conditions are not met, preventing erroneous charges for user operations.
 
 
-• When developing an account contract according to EIP-4337:
+When developing an account contract according to EIP-4337:
 The EIP-4337 Account contract utilizes custom methods for signature validation, which may carry potential vulnerability risks. Therefore, it is crucial to exercise caution and ensure that the chosen validation methods are sufficiently secure during development.
 Users are encouraged to avoid violating the conditions set forth in the paymaster contract's postOp() function to prevent being charged for incomplete operations.
 
