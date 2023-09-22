@@ -360,11 +360,13 @@ Following is a helpful diagram for understanding the interaction between paymast
 Executor calls both a paymaster contract and a user's smart contract wallet to determine if the user's transaction can be sponsored.
 
 When developing a paymaster contract, additional considerations include:
+
 Paymasters must ensure that if validatePaymasterUserOp() succeeds, the postOp() function must be completed. Failure to do so may lead bundlers to attribute it to improper behavior by the paymaster, potentially resulting in restrictions or prohibitions on the paymaster's operations within the mempool.
 Paymasters must also ensure that the postOp() function reverts when conditions are not met, preventing erroneous charges for user operations.
 
 
 When developing an account contract according to EIP-4337:
+
 The EIP-4337 Account contract utilizes custom methods for signature validation, which may carry potential vulnerability risks. Therefore, it is crucial to exercise caution and ensure that the chosen validation methods are sufficiently secure during development.
 Users are encouraged to avoid violating the conditions set forth in the paymaster contract's postOp() function to prevent being charged for incomplete operations.
 
