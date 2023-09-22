@@ -128,7 +128,7 @@ Following is a sample implementation of the validateUserOp function. This is als
 
 ![1](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/pic/1.png)
 
-The dotted line in the above image shows the off-chain execution of ***validateOp*** by the ***executor***.
+The dotted line in the above image shows the off-chain execution of `validateOp` by the `executor`.
 
 ## Test case description
 ### 1. Wallet
