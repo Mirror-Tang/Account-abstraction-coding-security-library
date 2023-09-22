@@ -131,6 +131,108 @@ Following is a sample implementation of the validateUserOp function. This is als
 The dotted line in the above image shows the off-chain execution of ***validateOp*** by the ***executor***.
 
 ## Test case description
+### 1. Wallet
+
+According to EIP-4337 requirements, the `validateUserOp()` function of the wallet contract must return values that include `authorizer`, `validUntil`, and `validAfter` timestamps. For `authorizer`, 0 indicates a valid signature, 1 indicates a signature failure, and any other value represents the address of the authorizer contract. To  ensure that the wallet contract correctly implements `validateUserOp()`, we construct tests using incorrect signatures. When the verification fails, the `authorizer` field in the return value must not be 0.
+
+This test case is located in [test\Wallet.t.sol]()
+
+```solidity
+    function test_validateUserOp_sig_fail() external {
+        (UserOperation memory op,bytes32 ophash)=getOp();
+        bytes memory errorSig=getSignature(key,bytes32(0));        
+        op.signature=errorSig;
+        vm.startPrank(address(entryPoint));
+        uint ret = account.validateUserOp(op, ophash, 0);
+        vm.stopPrank();
+        uint authorizer=uint(uint160(ret));
+        bool failure=(authorizer==0);
+        assertFalse(failure);
+    } 
+```
+
+
+
+The `validateUserOp()` function of the wallet contract has the parameter `missingAccountFunds`. The wallet contract must pay the entryPoint at least the specified `missingAccountFunds`. Therefore, to ensure that the wallet contract correctly implements this feature, we need to test when the `missingAccountFunds` parameter is not 0. The wallet balance recorded within the entrypoint should increase by at least the amount specified.
+
+This test case is located in [test\Wallet.t.sol]()
+
+```solidity
+    function test_validateUserOp_missingAccountFunds() external {
+        uint missingFunds=100000;
+        (address(account)).call{value:1 ether}("");
+        (UserOperation memory op,bytes32 ophash)=getOp();
+        uint112 before_deposit=entryPoint.getDepositInfo(address(account)).deposit;
+        vm.startPrank(address(entryPoint));
+        account.validateUserOp(op, ophash, missingFunds);
+        vm.stopPrank();
+        uint112 after_deposit=entryPoint.getDepositInfo(address(account)).deposit;
+        assertGe(after_deposit-before_deposit, missingFunds);
+    } 
+```
+
+
+
+
+The wallet contract must validate that the caller is a trusted `EntryPoint`. To ensure that the wallet contract enforces this restriction during  development, we need to test that when the caller is not the entry  point, the `validateUserOp()` function should revert, ensuring that this function cannot be called by other addresses.
+
+This test case is located in [test\Wallet.t.sol]()
+
+```solidity
+    function test_validateUserOp_onlyEntryPoint(address msgSender)external{
+        vm.assume(msgSender!=address(entryPoint));
+        (UserOperation memory op,bytes32 ophash)=getOp();
+        vm.startPrank(msgSender);
+        vm.expectRevert();
+        account.validateUserOp(op, ophash, 0);
+        vm.stopPrank();
+    }
+```
+
+
+
+### 2.Paymaster
+
+In the `validatePaymasterUserOp()` function of the paymaster  contract, developers need to ensure that users have either pre-paid or  can pay the required fees. Otherwise, the paymaster may not be able to  collect the appropriate fees from users. Therefore, we perform tests in  scenarios where the wallet has had no interaction with the paymaster  (i.e., the wallet cannot make payments to the paymaster). In this  situation, we expect `validatePaymasterUserOp()` to revert. This test ensures that the operation does not execute when users cannot pay.
+
+This test case is located in [test\Paymaster.t.sol]()
+
+```solidity
+    function test_validatePaymasterUserOp_revert() external {
+        bytes memory _pmdata=abi.encode(address(paymaster));
+        (UserOperation memory op,bytes32 ophash)=getOpWithPm(_pmdata);
+        vm.startPrank(address(entryPoint));
+        vm.expectRevert();
+        paymaster.validatePaymasterUserOp(op, ophash, 10000);
+        vm.stopPrank(); 
+    }  
+```
+
+
+
+
+
+In the `validatePaymasterUserOp()` function of the paymaster contract, similar to the wallet contract, it is required that the function can only be called by the `entryPoint` contract. To ensure that the paymaster contract enforces this  restriction during development, we need to test that when the caller is  not the entry point, the `validatePaymasterUserOp()` function should revert.
+
+This test case is located in [test\Paymaster.t.sol]()
+
+```solidity
+    function test_validatePaymasterUserOp_onlyEntryPoint(address msgSender)external{
+        vm.assume(msgSender!=address(entryPoint));
+        // Ensure that it correctly validates when called by the entrypoint
+        paymaster.mintTokens(address(account),1 ether *100);
+        bytes memory _pmdata=abi.encode(address(paymaster));
+        (UserOperation memory op,bytes32 ophash)=getOpWithPm(_pmdata);
+        vm.startPrank(address(entryPoint));
+        paymaster.validatePaymasterUserOp(op, ophash, 10000);
+        vm.stopPrank(); 
+        //test
+        vm.startPrank(msgSender);
+        vm.expectRevert();
+        paymaster.validatePaymasterUserOp(op, ophash, 10000);
+        vm.stopPrank(); 
+    }
+```
 
 ## Security Considerations for Developers
 ERC-4337’s design abstracts many account properties (gas payment, authentication, transaction batching, etc.) into smart contracts, which necessitates extra scrutiny to guard against the potential attack surfaces this opens up.
