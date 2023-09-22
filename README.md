@@ -135,7 +135,7 @@ The dotted line in the above image shows the off-chain execution of ***validateO
 
 According to EIP-4337 requirements, the `validateUserOp()` function of the wallet contract must return values that include `authorizer`, `validUntil`, and `validAfter` timestamps. For `authorizer`, 0 indicates a valid signature, 1 indicates a signature failure, and any other value represents the address of the authorizer contract. To  ensure that the wallet contract correctly implements `validateUserOp()`, we construct tests using incorrect signatures. When the verification fails, the `authorizer` field in the return value must not be 0.
 
-This test case is located in [test\Wallet.t.sol : L27](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/EIP4337TestCases/test/Wallet.t.sol#L27)
+This test case is located in [test\Wallet.t.sol : L21](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/EIP4337TestCase/test/Wallet.t.sol#L21)
 
 ```solidity
     function test_validateUserOp_sig_fail() external {
@@ -155,7 +155,7 @@ This test case is located in [test\Wallet.t.sol : L27](https://github.com/Mirror
 
 The `validateUserOp()` function of the wallet contract has the parameter `missingAccountFunds`. The wallet contract must pay the entryPoint at least the specified `missingAccountFunds`. Therefore, to ensure that the wallet contract correctly implements this feature, we need to test when the `missingAccountFunds` parameter is not 0. The wallet balance recorded within the entrypoint should increase by at least the amount specified.
 
-This test case is located in [test\Wallet.t.sol : L39](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/EIP4337TestCases/test/Wallet.t.sol#L39)
+This test case is located in [test\Wallet.t.sol : L33](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/EIP4337TestCase/test/Wallet.t.sol#L33)
 
 ```solidity
     function test_validateUserOp_missingAccountFunds() external {
@@ -176,7 +176,7 @@ This test case is located in [test\Wallet.t.sol : L39](https://github.com/Mirror
 
 The wallet contract must validate that the caller is a trusted `EntryPoint`. To ensure that the wallet contract enforces this restriction during  development, we need to test that when the caller is not the entry  point, the `validateUserOp()` function should revert, ensuring that this function cannot be called by other addresses.
 
-This test case is located in [test\Wallet.t.sol : L45]()
+This test case is located in [test\Wallet.t.sol : L45](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/EIP4337TestCase/test/Wallet.t.sol#L45)
 
 ```solidity
     function test_validateUserOp_onlyEntryPoint(address msgSender)external{
@@ -195,7 +195,7 @@ This test case is located in [test\Wallet.t.sol : L45]()
 
 In the `validatePaymasterUserOp()` function of the paymaster  contract, developers need to ensure that users have either pre-paid or  can pay the required fees. Otherwise, the paymaster may not be able to  collect the appropriate fees from users. Therefore, we perform tests in  scenarios where the wallet has had no interaction with the paymaster  (i.e., the wallet cannot make payments to the paymaster). In this  situation, we expect `validatePaymasterUserOp()` to revert. This test ensures that the operation does not execute when users cannot pay.
 
-This test case is located in [test\Paymaster.t.sol : L12]()
+This test case is located in [test\Paymaster.t.sol : L12](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/EIP4337TestCase/test/Paymaster.t.sol#L12)
 
 ```solidity
     function test_validatePaymasterUserOp_revert() external {
@@ -214,7 +214,7 @@ This test case is located in [test\Paymaster.t.sol : L12]()
 
 In the `validatePaymasterUserOp()` function of the paymaster contract, similar to the wallet contract, it is required that the function can only be called by the `entryPoint` contract. To ensure that the paymaster contract enforces this  restriction during development, we need to test that when the caller is  not the entry point, the `validatePaymasterUserOp()` function should revert.
 
-This test case is located in [test\Paymaster.t.sol : L21]()
+This test case is located in [test\Paymaster.t.sol : L21](https://github.com/Mirror-Tang/Account-abstraction-coding-security-specifications/blob/master/EIP4337TestCase/test/Paymaster.t.sol#L21)
 
 ```solidity
     function test_validatePaymasterUserOp_onlyEntryPoint(address msgSender)external{
@@ -359,15 +359,15 @@ Following is a helpful diagram for understanding the interaction between paymast
 
 Executor calls both a paymaster contract and a user's smart contract wallet to determine if the user's transaction can be sponsored.
 
-### Account:
+• When developing a paymaster contract, additional considerations include:
+Paymasters must ensure that if validatePaymasterUserOp() succeeds, the postOp() function must be completed. Failure to do so may lead bundlers to attribute it to improper behavior by the paymaster, potentially resulting in restrictions or prohibitions on the paymaster's operations within the mempool.
+Paymasters must also ensure that the postOp() function reverts when conditions are not met, preventing erroneous charges for user operations.
 
+
+• When developing an account contract according to EIP-4337:
 The EIP-4337 Account contract utilizes custom methods for signature validation, which may carry potential vulnerability risks. Therefore, it is crucial to exercise caution and ensure that the chosen validation methods are sufficiently secure during development.
 Users are encouraged to avoid violating the conditions set forth in the paymaster contract's postOp() function to prevent being charged for incomplete operations.
 
-### Paymaster:
-
-Paymasters must ensure that if validatePaymasterUserOp() succeeds, the postOp() function must be completed. Failure to do so may lead bundlers to attribute it to improper behavior by the paymaster, potentially resulting in restrictions or prohibitions on the paymaster's operations within the mempool.
-Paymasters must also ensure that their postOp() function revert when conditions are not met, preventing erroneous charges for user operations.
 
 ## What else are we doing?
 What else are we doing?We also probably continue my research on the risks of migrating smart contracts between EVM-based Layer 2 networks. In fact, due to the different characteristics of various L2 solutions, there are significant risks involved in migrating smart contracts across different public chains. You can refer to my paper titled "Smart Contract Migration: Security Analysis and Recommendations from Ethereum to Arbitrum" for more information on the migration risks related to Arbitrum. Here is the link:
